@@ -1,0 +1,75 @@
+name: Build UniversalUnityPatcher for Windows
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      nekonexus_ref:
+        description: NekoNexus branch, tag, or commit to read its patcher build recipe from
+        required: true
+        default: dev
+
+permissions:
+  contents: read
+
+jobs:
+  build-patcher:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout NekoNexus build recipe
+        uses: actions/checkout@v4
+        with:
+          repository: NekoSune-GameServers-MP-Mods/NekoNexus
+          ref: ${{ github.event.inputs.nekonexus_ref || 'dev' }}
+          path: upstream/NekoNexus
+
+      - name: Checkout UniversalUnityPatcher source used by NekoNexus
+        uses: actions/checkout@v4
+        with:
+          repository: festivaldev/UniversalUnityPatcher
+          path: upstream/NekoNexus/packages/Patcher
+
+      - uses: microsoft/setup-msbuild@v2
+      - uses: nuget/setup-nuget@v2
+
+      - name: Build with the NekoNexus Windows runner steps
+        shell: pwsh
+        working-directory: upstream/NekoNexus
+        run: |
+          nuget restore packages/Patcher/UniversalUnityPatcher.sln
+          if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
+          msbuild packages/Patcher/UniversalUnityPatcher.sln /p:Configuration=Release
+          if ($LASTEXITCODE -ne 0) { throw "MSBuild failed: $LASTEXITCODE" }
+          if (-not (Test-Path packages/Patcher/bin/Release/UniversalUnityPatcher.exe)) {
+            throw 'UniversalUnityPatcher.exe was not produced.'
+          }
+
+      - name: Package patcher and license
+        shell: pwsh
+        run: |
+          $source = 'upstream/NekoNexus/packages/Patcher'
+          $output = 'dist/UniversalUnityPatcher-windows'
+          New-Item -ItemType Directory -Force -Path $output | Out-Null
+          Copy-Item "$source/bin/Release/*" $output -Recurse -Force
+          Copy-Item "$source/LICENSE" $output -Force
+          Copy-Item "$source/README.md" $output -Force
+          Compress-Archive -Path "$output/*" -DestinationPath 'dist/UniversalUnityPatcher-windows.zip' -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UniversalUnityPatcher-windows
+          path: dist/UniversalUnityPatcher-windows.zip
+          if-no-files-found: error
+
+      - name: Explain artifact scope
+        shell: pwsh
+        run: |
+          @'
+          The artifact is the generic UniversalUnityPatcher tool from NekoNexus's upstream build recipe.
+          It does not contain UberStrike game files, proprietary reference assemblies, or a community
+          client patch definition/bootstrap. Those remain separate integration work.
+          '@ | Add-Content $env:GITHUB_STEP_SUMMARY

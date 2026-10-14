@@ -1,0 +1,16 @@
+services:
+  community-directory:
+    build: .
+    image: uberstrike-community-directory:local
+    restart: unless-stopped
+    environment:
+      DIRECTORY_HOST: 0.0.0.0
+      DIRECTORY_PORT: 8090
+      DIRECTORY_DB: /data/community-directory.sqlite3
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - directory-data:/data
+
+volumes:
+  directory-data:
