@@ -20,7 +20,7 @@ Run its current unit coverage with `python -m unittest discover -s directory -v`
 
 ## Docker image
 
-Build and start locally with `docker compose up --build -d`. The container stores SQLite data in the `directory-data` volume and binds to localhost port `8090`; put an HTTPS reverse proxy in front of it for public hosting. The GitHub Actions workflow builds and publishes `ghcr.io/nekosune-gameservers-mp-mods/uberstrike-community-directory` on pushes to `main` and version tags. Pull requests build and test without publishing.
+Build and start locally with `docker compose up --build -d`. The container stores SQLite data in the `directory-data` volume and binds to localhost port `8090`; put an HTTPS reverse proxy in front of it for public hosting. On startup, the entrypoint repairs ownership of the mounted database directory/file and then drops privileges to the `directory` service account, which also supports volumes created by older images. The GitHub Actions workflow builds and publishes `ghcr.io/nekosune-gameservers-mp-mods/uberstrike-community-directory` on pushes to `main` and version tags. Pull requests build and test without publishing.
 
 ## Windows client installer (early preview)
 

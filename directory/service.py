@@ -11,6 +11,7 @@ import hmac
 import ipaddress
 import json
 import os
+from pathlib import Path
 import re
 import sqlite3
 import threading
@@ -94,6 +95,7 @@ def _short_text(value: Any, limit: int, field: str) -> str:
 class Directory:
     def __init__(self, database: str):
         self.db_path = database
+        Path(database).parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
         with closing(self._connect()) as db, db:
             db.execute("""CREATE TABLE IF NOT EXISTS servers (
