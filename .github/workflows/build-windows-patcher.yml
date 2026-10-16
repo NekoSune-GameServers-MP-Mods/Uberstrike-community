@@ -33,6 +33,11 @@ jobs:
           repository: festivaldev/UniversalUnityPatcher
           path: upstream/NekoNexus/packages/Patcher
 
+      - name: Apply Paradise cyberpunk theme to UniversalUnityPatcher
+        shell: pwsh
+        run: |
+          Copy-Item "patcher/UniversalUnityPatcher/MainWindow.cs" "upstream/NekoNexus/packages/Patcher/MainWindow.cs" -Force
+
       - uses: microsoft/setup-msbuild@v2
       - uses: nuget/setup-nuget@v2
 
