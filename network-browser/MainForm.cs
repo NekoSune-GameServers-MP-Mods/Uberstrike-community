@@ -337,7 +337,6 @@ public sealed class MainForm : Form
 
     private static void ApplyTheme(Control control)
     {
-        control.ForeColor = TextColor;
         if (control is Form)
             control.BackColor = BackgroundColor;
         else if (control is DataGridView grid)
