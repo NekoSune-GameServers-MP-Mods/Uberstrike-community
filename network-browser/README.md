@@ -12,7 +12,7 @@ A Windows desktop companion for the community-owned UberStrike directory. The ap
 - Filter game servers and community nodes.
 - View public server metadata and copy an endpoint.
 - Uses the shared directory API rather than a separate local server catalogue.
-- Reads the central patch catalogue from the configured Paradise URL and displays enabled provider entries or legacy UniversalUnityPatcher patch definitions in a read-only view.
+- Reads the central patch catalogue from the fixed Paradise URL and displays enabled provider entries or legacy UniversalUnityPatcher patch definitions in a read-only view.
 - Restricts the catalogue request to HTTPS, prohibits XML DTDs/external entity resolution, and caps catalogue size at 1 MB.
 
 ## Patch catalogue integration requirement
