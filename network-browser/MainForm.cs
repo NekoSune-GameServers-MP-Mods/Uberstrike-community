@@ -13,6 +13,7 @@ public sealed class MainForm : Form
     private static readonly Color MutedColor = Color.FromArgb(148, 166, 153);
 
     private readonly DirectoryClient _client = new();
+    private readonly PatchCatalogClient _patchCatalogClient = new();
     private readonly TextBox _directoryUrl = new() { Text = DirectoryClient.DefaultBaseUrl };
     private readonly TextBox _search = new() { PlaceholderText = "Search name, region, map, or address" };
     private readonly ComboBox _softwareFilter = new() { DropDownStyle = ComboBoxStyle.DropDownList };
@@ -23,6 +24,7 @@ public sealed class MainForm : Form
     private readonly Label _detailTitle = new() { Text = "Select a server", Font = new Font("Segoe UI Semibold", 13, FontStyle.Bold) };
     private readonly Label _details = new() { Text = "Choose a server to view its public details.", AutoSize = false };
     private readonly Button _refresh = new() { Text = "Refresh servers", Width = 132, Height = 36 };
+    private readonly Button _patchCatalog = new() { Text = "Patch catalogue", Width = 132, Height = 36 };
     private readonly Button _copyEndpoint = new() { Text = "Copy endpoint", Width = 124, Height = 34, Enabled = false };
     private readonly Button _openDirectory = new() { Text = "Open directory", Width = 124, Height = 34 };
     private readonly System.Windows.Forms.Timer _timer = new() { Interval = 30_000 };
@@ -42,6 +44,7 @@ public sealed class MainForm : Form
         BuildLayout();
         ApplyTheme(this);
         _refresh.Click += async (_, _) => await RefreshServersAsync();
+        _patchCatalog.Click += async (_, _) => await ShowPatchCatalogAsync();
         _search.TextChanged += (_, _) => ApplyFilters();
         _softwareFilter.SelectedIndexChanged += (_, _) => ApplyFilters();
         _typeFilter.SelectedIndexChanged += (_, _) => ApplyFilters();
@@ -56,6 +59,7 @@ public sealed class MainForm : Form
             _refreshCancellation?.Cancel();
             _refreshCancellation?.Dispose();
             _client.Dispose();
+            _patchCatalogClient.Dispose();
         };
     }
 
@@ -75,9 +79,10 @@ public sealed class MainForm : Form
         header.Controls.Add(subtitle);
         root.Controls.Add(header, 0, 0);
 
-        var connection = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, RowCount = 2, BackColor = PanelColor, Padding = new Padding(12), Margin = new Padding(0, 0, 0, 12) };
+        var connection = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, RowCount = 2, BackColor = PanelColor, Padding = new Padding(12), Margin = new Padding(0, 0, 0, 12) };
         connection.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140));
+        connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 132));
         connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 132));
         connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 124));
         connection.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
@@ -86,9 +91,10 @@ public sealed class MainForm : Form
         connection.Controls.Add(urlLabel, 0, 0);
         connection.Controls.Add(_directoryUrl, 0, 1);
         connection.Controls.Add(_refresh, 1, 1);
-        connection.Controls.Add(_openDirectory, 2, 1);
+        connection.Controls.Add(_patchCatalog, 2, 1);
+        connection.Controls.Add(_openDirectory, 3, 1);
         var hint = new Label { Text = "Auto-refresh every 30 seconds", ForeColor = MutedColor, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter };
-        connection.Controls.Add(hint, 3, 1);
+        connection.Controls.Add(hint, 4, 1);
         root.Controls.Add(connection, 0, 1);
 
         var body = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3 };
@@ -193,6 +199,50 @@ public sealed class MainForm : Form
             _refreshing = false;
             _refresh.Enabled = true;
             _refresh.Text = "Refresh servers";
+        }
+    }
+
+    private async Task ShowPatchCatalogAsync()
+    {
+        _patchCatalog.Enabled = false;
+        _patchCatalog.Text = "Loading...";
+        try
+        {
+            var entries = await _patchCatalogClient.GetEntriesAsync(CancellationToken.None);
+            if (entries.Count == 0)
+            {
+                MessageBox.Show(this,
+                    "The central catalogue is reachable, but it contains no enabled providers or patch definitions.",
+                    "Paradise patch catalogue", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                _status.Text = "Patch catalogue loaded | No enabled entries";
+                return;
+            }
+
+            var lines = entries.Select(entry =>
+            {
+                var description = string.IsNullOrWhiteSpace(entry.Description) ? "No description provided." : entry.Description;
+                var manifest = string.IsNullOrWhiteSpace(entry.Url) ? "" : $"\\r\\nManifest: {entry.Url}";
+                return $"{entry.Name} [{entry.Kind}]\\r\\n{description}{manifest}";
+            });
+
+            MessageBox.Show(this, string.Join("\\r\\n\\r\\n", lines),
+                $"Paradise patch catalogue ({entries.Count})",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _status.Text = $"Patch catalogue loaded | {entries.Count} entry/entries | Read-only listing; no patches were applied";
+            _status.ForeColor = AccentColor;
+        }
+        catch (Exception ex)
+        {
+            _status.Text = $"Patch catalogue unavailable: {ex.Message}";
+            _status.ForeColor = Color.FromArgb(255, 170, 110);
+            MessageBox.Show(this,
+                $"Could not load the central patch catalogue. The directory may not publish it yet.\\r\\n\\r\\n{ex.Message}",
+                "Paradise patch catalogue unavailable", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        finally
+        {
+            _patchCatalog.Enabled = true;
+            _patchCatalog.Text = "Patch catalogue";
         }
     }
 
