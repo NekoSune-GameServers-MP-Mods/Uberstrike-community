@@ -13,13 +13,31 @@ A Windows desktop companion for the community-owned UberStrike directory. The ap
 - View public server metadata and copy an endpoint.
 - Uses the shared directory API rather than a separate local server catalogue.
 
+## Patch catalogue integration requirement
+
+The intended central patch catalogue URL is:
+
+`https://paradise-directory.nekosunevr.co.uk/patch-file.xml`
+
+The goal is for UniversalUnityPatcher and compatible Paradise/community patcher clients to refresh this central catalogue so newly published community and personal patch definitions become available without users manually replacing XML files.
+
+**This URL is a requested target, not a verified live endpoint.** The current directory API and this browser PR do not implement or publish it. A complete implementation requires coordinated changes:
+
+1. Publish and maintain the XML catalogue from the Paradise directory service, including only reviewed, compatible patch definitions or trusted references to provider manifests.
+2. Update UniversalUnityPatcher (or its supported extension mechanism) to download and refresh the remote catalogue; an XML patch definition cannot fetch or update itself.
+3. Add a documented provider/manifest contract and ownership/opt-in rules so community providers can publish updates safely.
+4. Validate XML and compatibility metadata before applying patches, use HTTPS, retain the last known-good catalogue if an update fails, and do not silently execute untrusted patch payloads.
+5. Keep server discovery separate from patch trust: an opted-in public server listing must not automatically make its provider or patch trusted.
+
+This browser PR currently covers public server discovery, not the UniversalUnityPatcher implementation or deployment of the catalogue endpoint. The central catalogue must not be described as live until the directory service actually serves and validates it.
+
 ## Build
 
 Requirements: Windows and the .NET 8 SDK.
 
 ```powershell
-dotnet build .\network-browser\ParadiseNetworkBrowser.csproj -c Release
-dotnet run --project .\network-browser\ParadiseNetworkBrowser.csproj
+dotnet build .\\network-browser\\ParadiseNetworkBrowser.csproj -c Release
+dotnet run --project .\\network-browser\\ParadiseNetworkBrowser.csproj
 ```
 
 ## Current limitations
