@@ -259,7 +259,7 @@ public sealed class MainForm : Form
                 return $"{entry.Name} [{entry.Kind}]\r\n{description}{manifest}";
             });
 
-            MessageBox.Show(this, string.Join("\\r\\n\\r\\n", lines),
+            MessageBox.Show(this, string.Join("\r\n\r\n", lines),
                 $"Paradise patch catalogue ({entries.Count})",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             _status.Text = $"Patch catalogue loaded | {entries.Count} entry/entries | Read-only listing; no patches were applied";
@@ -393,19 +393,12 @@ public sealed class MainForm : Form
                 button.FlatAppearance.BorderColor = Color.FromArgb(39, 112, 66);
             }
         }
-        else if (control is Panel panel)
-        {
-            if (panel.BackColor != BackgroundColor && panel.BackColor != PanelColor)
-                panel.BackColor = PanelColor;
-        }
         else if (control is TableLayoutPanel or FlowLayoutPanel)
         {
-            if (control.BackColor != BackgroundColor)
-                control.BackColor = PanelColor;
+            // Preserve the explicitly assigned background of each layout surface.
         }
 
         foreach (Control child in control.Controls)
             ApplyTheme(child);
     }
-}
 }
