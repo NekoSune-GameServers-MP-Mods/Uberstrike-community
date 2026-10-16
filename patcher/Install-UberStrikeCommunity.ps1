@@ -1,11 +1,12 @@
 <#
 .SYNOPSIS
-Installs the existing NekoNexus-compatible UberStrike client patch from a local source checkout.
+Installs the shared UberStrike community client patch from a local NekoNexus source checkout.
 
 .DESCRIPTION
-This is an installer entry point, not a new client mod. It reuses NekoNexus's supported
-UniversalUnityPatcher definition, bootstrap and LiteNetLib shim. The service host must run a
-NekoNexus-compatible UberStrike web service. The community JSON directory is not compatible yet.
+This reuses NekoNexus's UniversalUnityPatcher, bootstrap and LiteNetLib shim. By default,
+the client uses the shared Paradise community endpoint. That hostname must route the legacy
+UberStrike SOAP web-service paths to Paradise and /api/community/servers to the directory API;
+the JSON API alone is not a replacement for the legacy game web service.
 
 .EXAMPLE
 ./Install-UberStrikeCommunity.ps1 -UberStrikePath 'C:\Games\UberStrike' `
@@ -16,7 +17,7 @@ NekoNexus-compatible UberStrike web service. The community JSON directory is not
 param(
   [Parameter(Mandatory)][string]$UberStrikePath,
   [Parameter(Mandatory)][string]$NekoNexusRepoPath,
-  [Parameter(Mandatory)][string]$WebServiceHost,
+  [string]$WebServiceHost = 'paradise-directory.nekosunevr.co.uk',
   [int]$WebPort = 8080,
   [int]$FilePort = 8081,
   [switch]$InsecureHttp,
@@ -75,11 +76,12 @@ $arguments = @{
 if (-not $InsecureHttp) { $arguments.Https = $true }
 if ($SkipBuild) { $arguments.SkipBuild = $true }
 
-Write-Host 'Installing the NekoNexus-compatible UberStrike client patch.' -ForegroundColor Cyan
-Write-Host 'The current community directory API is not a compatible game web service.' -ForegroundColor Yellow
+Write-Host 'Installing the shared UberStrike community client patch.' -ForegroundColor Cyan
+Write-Host "Legacy game-service host: $WebServiceHost" -ForegroundColor DarkCyan
+Write-Host 'The shared host must expose Paradise legacy SOAP services and the community directory API.' -ForegroundColor Yellow
 & $installer @arguments
 if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) {
   throw "NekoNexus patch/install script failed with exit code $LASTEXITCODE."
 }
 
-Write-Host 'Client patch installed. The game will use the specified NekoNexus-compatible web service.' -ForegroundColor Green
+Write-Host 'Client patch installed. Server discovery is supplied by the shared host, not by a per-server patcher.' -ForegroundColor Green
