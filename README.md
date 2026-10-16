@@ -24,32 +24,33 @@ Build and start locally with `docker compose up --build -d`. The container store
 
 ## Windows client installer (early preview)
 
-`patcher/Install-UberStrikeCommunity.ps1` is an installer entry point that reuses NekoNexus's existing UniversalUnityPatcher, client bootstrap, and LiteNetLib transport. It requires an UberStrike installation and a local NekoNexus source checkout; it can build the patcher when NuGet and MSBuild are available. Example:
+`patcher/Install-UberStrikeCommunity.ps1` is a shared installer entry point, not a patcher per server. It reuses NekoNexus's existing UniversalUnityPatcher, client bootstrap, and LiteNetLib transport. It requires an UberStrike installation and a local NekoNexus source checkout; it can build the patcher when NuGet and MSBuild are available. By default, clients use `paradise-directory.nekosunevr.co.uk`. Example:
 
 ```powershell
 .\patcher\Install-UberStrikeCommunity.ps1 `
   -UberStrikePath 'C:\Games\UberStrike' `
   -NekoNexusRepoPath 'D:\DEV\Forked Projects\NekoNexus' `
-  -WebServiceHost 'play.example.org'
+  # Shared default; override only for local testing or another compatible deployment.
+  -WebServiceHost 'paradise-directory.nekosunevr.co.uk'
 ```
 
-HTTPS is used by default. For a local test host only, pass `-InsecureHttp` and set ports as needed. Close the game before running the installer. The patcher backs up the game assembly and original Photon transport using the upstream installation flow. This preview currently installs a NekoNexus-compatible client; it cannot show this repository's directory until the legacy game-service adapter is implemented. No game binaries or patcher executable are bundled here.
+HTTPS is used by default. For a local test host only, pass `-InsecureHttp` and set ports as needed. Close the game before running the installer. The patcher backs up the game assembly and original Photon transport using the upstream installation flow. The existing in-game server browser receives directory entries through Paradise's legacy `AuthenticateApplication` adapter (tracked in Paradise PR #2); clients do not query the JSON directory directly. The shared hostname must route legacy UberStrike SOAP paths to the compatible Paradise web-service host and `/api/community/servers` to the directory service. No game binaries or patcher executable are bundled here.
 
 The `Build UniversalUnityPatcher for Windows` workflow runs on pushes to `main`, pull requests, and manual dispatch. It reads NekoNexus's Windows build steps, builds the generic UniversalUnityPatcher on `windows-latest`, and uploads a ZIP artifact. That artifact is only the generic patching utility and its license/readme; it is not a ready-to-install UberStrike community patch. Game references stay off GitHub runners because they are proprietary, and the community client patch definition/bootstrap still needs to be implemented.
 
 ## Current status
 
-The repository investigation and compatibility report are in [docs/architecture-and-compatibility.md](docs/architecture-and-compatibility.md). The current repositories do not yet provide a complete automatic public directory:
+The repository investigation and compatibility report are in [docs/architecture-and-compatibility.md](docs/architecture-and-compatibility.md). The shared discovery path is implemented, but deployment still depends on the directory's trusted realtime probe and correct reverse-proxy routing:
 
 - NekoNexus serves the game's legacy `AuthenticateApplication` response, but its server entries are configured statically in `ServerCredentials` and the database.
-- Paradise stores server records in its `PhotonServers` database model. Its legacy `GetPhotonServers` implementation currently returns “Not Implemented”; its client still receives server entries from the `AuthenticateApplication` response.
+- Paradise stores server records in its `PhotonServers` database model and PR #2 adapts verified public directory records into the legacy `AuthenticateApplication` response. `GetPhotonServers` remains outside the active browser path.
 - Both client integrations require a compatible UberStrike client build. The game consumes serialized `PhotonServer` views, not a modern JSON server list.
 
 ## Planned integration
 
 1. Add a community directory API with authenticated server registration, heartbeats, health state, and a filtered public list.
 2. Integrate NekoNexus server startup with the directory while keeping the game server running during directory outages.
-3. Have NekoNexus's existing `AuthenticateApplication` response use verified directory entries, serialized with its existing UberStrike protocol library.
+3. Keep `AuthenticateApplication` as the in-game browser path and serialize verified directory entries with the existing UberStrike protocol library (implemented in Paradise PR #2; equivalent NekoNexus support remains follow-up work).
 4. Add moderation and owner onboarding, then verify the list and realtime connection with a live compatible client.
 
 The directory must not advertise an entry as online until a protocol-aware probe has validated its realtime listener. A heartbeat by itself is not gameplay verification. The current upstream server code does not yet expose a directory probe handler, so public discovery remains an integration task rather than a claim of completed end-to-end behavior.
