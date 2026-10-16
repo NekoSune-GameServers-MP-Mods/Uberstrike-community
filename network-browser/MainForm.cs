@@ -5,12 +5,14 @@ namespace ParadiseNetworkBrowser;
 
 public sealed class MainForm : Form
 {
-    private static readonly Color BackgroundColor = Color.FromArgb(10, 14, 12);
-    private static readonly Color PanelColor = Color.FromArgb(19, 27, 22);
-    private static readonly Color BorderColor = Color.FromArgb(43, 61, 49);
-    private static readonly Color AccentColor = Color.FromArgb(46, 204, 113);
-    private static readonly Color TextColor = Color.FromArgb(230, 238, 232);
-    private static readonly Color MutedColor = Color.FromArgb(148, 166, 153);
+    private static readonly Color BackgroundColor = Color.FromArgb(7, 11, 9);
+    private static readonly Color PanelColor = Color.FromArgb(13, 20, 16);
+    private static readonly Color SurfaceColor = Color.FromArgb(17, 27, 21);
+    private static readonly Color BorderColor = Color.FromArgb(35, 58, 42);
+    private static readonly Color AccentColor = Color.FromArgb(57, 255, 136);
+    private static readonly Color AccentDimColor = Color.FromArgb(25, 78, 47);
+    private static readonly Color TextColor = Color.FromArgb(231, 245, 235);
+    private static readonly Color MutedColor = Color.FromArgb(137, 163, 145);
 
     private readonly DirectoryClient _client = new();
     private readonly PatchCatalogClient _patchCatalogClient = new();
@@ -65,79 +67,103 @@ public sealed class MainForm : Form
 
     private void BuildLayout()
     {
-        var root = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 4, Padding = new Padding(22), BackColor = BackgroundColor };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 76));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 94));
+        var root = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 6, Padding = new Padding(24, 18, 24, 16), BackColor = BackgroundColor, Margin = new Padding(0) };
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 82));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 82));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 132));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         Controls.Add(root);
 
-        var header = new Panel { Dock = DockStyle.Fill };
-        var title = new Label { Text = "PARADISE NETWORK", Font = new Font("Segoe UI Semibold", 21, FontStyle.Bold), ForeColor = AccentColor, AutoSize = true, Location = new Point(0, 0) };
-        var subtitle = new Label { Text = "Public community servers and opted-in network nodes", ForeColor = MutedColor, AutoSize = true, Location = new Point(2, 42) };
-        header.Controls.Add(title);
-        header.Controls.Add(subtitle);
+        var header = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = BackgroundColor, Margin = new Padding(0, 0, 0, 12) };
+        header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 210));
+        var brand = new Panel { Dock = DockStyle.Fill, BackColor = BackgroundColor, Padding = new Padding(14, 0, 0, 0) };
+        brand.Controls.Add(new Panel { BackColor = AccentColor, Location = new Point(0, 8), Size = new Size(3, 52) });
+        brand.Controls.Add(new Label { Text = "PARADISE  /  NETWORK", Font = new Font("Segoe UI Semibold", 21, FontStyle.Bold), ForeColor = AccentColor, AutoSize = true, Location = new Point(14, 2) });
+        brand.Controls.Add(new Label { Text = "COMMUNITY SERVER DISCOVERY  /  LIVE DIRECTORY", Font = new Font("Consolas", 8.5f), ForeColor = MutedColor, AutoSize = true, Location = new Point(17, 43) });
+        header.Controls.Add(brand, 0, 0);
+        var meta = new Panel { Dock = DockStyle.Fill, BackColor = BackgroundColor };
+        meta.Controls.Add(new Label { Text = "NETWORK STATUS", Font = new Font("Consolas", 8, FontStyle.Bold), ForeColor = MutedColor, AutoSize = true, Location = new Point(48, 10) });
+        meta.Controls.Add(new Label { Text = "PUBLIC DIRECTORY", Font = new Font("Consolas", 9, FontStyle.Bold), ForeColor = AccentColor, AutoSize = true, Location = new Point(48, 31) });
+        meta.Controls.Add(new Panel { BackColor = AccentColor, Size = new Size(8, 8), Location = new Point(32, 34) });
+        header.Controls.Add(meta, 1, 0);
         root.Controls.Add(header, 0, 0);
 
-        var connection = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, RowCount = 2, BackColor = PanelColor, Padding = new Padding(12), Margin = new Padding(0, 0, 0, 12) };
+        var connection = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, RowCount = 2, BackColor = PanelColor, Padding = new Padding(14, 9, 14, 9), Margin = new Padding(0, 0, 0, 10) };
         connection.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140));
-        connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 132));
-        connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 132));
-        connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 124));
-        connection.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+        connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 138));
+        connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 138));
+        connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 128));
+        connection.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170));
+        connection.RowStyles.Add(new RowStyle(SizeType.Absolute, 21));
         connection.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        var urlLabel = new Label { Text = "DIRECTORY API", ForeColor = MutedColor, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft };
-        connection.Controls.Add(urlLabel, 0, 0);
+        connection.Controls.Add(new Label { Text = "DIRECTORY API ENDPOINT", Font = new Font("Consolas", 8, FontStyle.Bold), ForeColor = MutedColor, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft }, 0, 0);
+        _directoryUrl.Dock = DockStyle.Fill;
+        _directoryUrl.Margin = new Padding(0, 1, 10, 0);
         connection.Controls.Add(_directoryUrl, 0, 1);
         connection.Controls.Add(_refresh, 1, 1);
         connection.Controls.Add(_patchCatalog, 2, 1);
         connection.Controls.Add(_openDirectory, 3, 1);
-        var hint = new Label { Text = "Auto-refresh every 30 seconds", ForeColor = MutedColor, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter };
-        connection.Controls.Add(hint, 4, 1);
+        connection.Controls.Add(new Label { Text = "AUTO-SYNC  /  30 SEC", Font = new Font("Consolas", 8, FontStyle.Bold), ForeColor = MutedColor, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter }, 4, 1);
         root.Controls.Add(connection, 0, 1);
 
-        var body = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3 };
-        body.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
-        body.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        body.RowStyles.Add(new RowStyle(SizeType.Absolute, 126));
-        var filters = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = false, Padding = new Padding(0, 4, 0, 4) };
-        _search.Width = 340;
+        var filters = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = false, Padding = new Padding(0, 5, 0, 3), BackColor = BackgroundColor, Margin = new Padding(0) };
+        _search.Width = 330;
+        _search.Height = 30;
+        _search.Margin = new Padding(0, 0, 10, 0);
         _softwareFilter.Width = 150;
+        _softwareFilter.Height = 30;
+        _softwareFilter.Margin = new Padding(0, 0, 10, 0);
+        _softwareFilter.Items.Clear();
         _softwareFilter.Items.AddRange(["All software", "Paradise", "NekoNexus", "Other"]);
         _softwareFilter.SelectedIndex = 0;
         _typeFilter.Width = 150;
+        _typeFilter.Height = 30;
+        _typeFilter.Margin = new Padding(0, 0, 14, 0);
+        _typeFilter.Items.Clear();
         _typeFilter.Items.AddRange(["All node types", "Game servers", "Community nodes"]);
         _typeFilter.SelectedIndex = 0;
+        _count.Font = new Font("Consolas", 9, FontStyle.Bold);
+        _count.ForeColor = AccentColor;
+        _count.AutoSize = true;
+        _count.Padding = new Padding(8, 7, 0, 0);
         filters.Controls.Add(_search);
         filters.Controls.Add(_softwareFilter);
         filters.Controls.Add(_typeFilter);
         filters.Controls.Add(_count);
-        _count.Padding = new Padding(12, 8, 0, 0);
-        body.Controls.Add(filters, 0, 0);
+        root.Controls.Add(filters, 0, 2);
 
         ConfigureGrid();
-        body.Controls.Add(_grid, 0, 1);
+        _grid.Margin = new Padding(0, 0, 0, 10);
+        root.Controls.Add(_grid, 0, 3);
 
-        var detailPanel = new Panel { Dock = DockStyle.Fill, BackColor = PanelColor, Padding = new Padding(14), Margin = new Padding(0, 12, 0, 0) };
-        _detailTitle.Location = new Point(14, 12);
+        var detailPanel = new Panel { Dock = DockStyle.Fill, BackColor = PanelColor, Padding = new Padding(16), Margin = new Padding(0, 4, 0, 8) };
+        detailPanel.Controls.Add(new Panel { BackColor = AccentColor, Dock = DockStyle.Left, Width = 3, Margin = new Padding(0) });
+        _detailTitle.Location = new Point(20, 13);
         _detailTitle.AutoSize = true;
-        _details.Location = new Point(16, 42);
-        _details.Size = new Size(760, 68);
+        _detailTitle.Font = new Font("Segoe UI Semibold", 12, FontStyle.Bold);
+        _detailTitle.ForeColor = AccentColor;
+        _details.Location = new Point(21, 43);
+        _details.Size = new Size(850, 72);
+        _details.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _details.Font = new Font("Consolas", 8.5f);
         _details.ForeColor = MutedColor;
         _copyEndpoint.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        _copyEndpoint.Location = new Point(Width - 320, 16);
-        _openDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        _copyEndpoint.Location = new Point(Width - 340, 14);
+        _copyEndpoint.Size = new Size(132, 34);
         detailPanel.Controls.Add(_detailTitle);
         detailPanel.Controls.Add(_details);
         detailPanel.Controls.Add(_copyEndpoint);
-        body.Controls.Add(detailPanel, 0, 2);
-        root.Controls.Add(body, 0, 2);
+        root.Controls.Add(detailPanel, 0, 4);
 
         _status.Dock = DockStyle.Fill;
         _status.ForeColor = MutedColor;
+        _status.Font = new Font("Consolas", 8.5f);
         _status.TextAlign = ContentAlignment.MiddleLeft;
-        root.Controls.Add(_status, 0, 3);
+        _status.Padding = new Padding(2, 0, 0, 0);
+        root.Controls.Add(_status, 0, 5);
     }
 
     private void ConfigureGrid()
@@ -154,7 +180,15 @@ public sealed class MainForm : Form
         _grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         _grid.AutoGenerateColumns = false;
         _grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        _grid.RowTemplate.Height = 34;
+        _grid.RowTemplate.Height = 38;
+        _grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+        _grid.ColumnHeadersHeight = 38;
+        _grid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+        _grid.DefaultCellStyle.Padding = new Padding(8, 0, 4, 0);
+        _grid.ColumnHeadersDefaultCellStyle.Padding = new Padding(8, 0, 4, 0);
+        _grid.ColumnHeadersDefaultCellStyle.Font = new Font("Consolas", 8.5f, FontStyle.Bold);
+        _grid.DefaultCellStyle.Font = new Font("Segoe UI", 9.5f);
+        _grid.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
         _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SERVER", DataPropertyName = nameof(ServerEntry.Name), FillWeight = 155 });
         _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "ADDRESS", DataPropertyName = nameof(ServerEntry.Endpoint), FillWeight = 125 });
         _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SOFTWARE", DataPropertyName = nameof(ServerEntry.ServerSoftware), FillWeight = 90 });
@@ -221,8 +255,8 @@ public sealed class MainForm : Form
             var lines = entries.Select(entry =>
             {
                 var description = string.IsNullOrWhiteSpace(entry.Description) ? "No description provided." : entry.Description;
-                var manifest = string.IsNullOrWhiteSpace(entry.Url) ? "" : $"\\r\\nManifest: {entry.Url}";
-                return $"{entry.Name} [{entry.Kind}]\\r\\n{description}{manifest}";
+                var manifest = string.IsNullOrWhiteSpace(entry.Url) ? "" : $"\r\nManifest: {entry.Url}";
+                return $"{entry.Name} [{entry.Kind}]\r\n{description}{manifest}";
             });
 
             MessageBox.Show(this, string.Join("\\r\\n\\r\\n", lines),
@@ -236,7 +270,7 @@ public sealed class MainForm : Form
             _status.Text = $"Patch catalogue unavailable: {ex.Message}";
             _status.ForeColor = Color.FromArgb(255, 170, 110);
             MessageBox.Show(this,
-                $"Could not load the central patch catalogue. The directory may not publish it yet.\\r\\n\\r\\n{ex.Message}",
+                $"Could not load the central patch catalogue. The directory may not publish it yet.\r\n\r\n{ex.Message}",
                 "Paradise patch catalogue unavailable", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
         finally
@@ -303,39 +337,75 @@ public sealed class MainForm : Form
 
     private static void ApplyTheme(Control control)
     {
-        foreach (Control child in control.Controls)
+        control.ForeColor = TextColor;
+        if (control is Form)
+            control.BackColor = BackgroundColor;
+        else if (control is DataGridView grid)
         {
-            child.ForeColor = child is Button ? Color.White : TextColor;
-            if (child is TextBox or ComboBox)
-            {
-                child.BackColor = Color.FromArgb(25, 35, 29);
-                child.ForeColor = TextColor;
-            }
-            else if (child is DataGridView grid)
-            {
-                grid.EnableHeadersVisualStyles = false;
-                grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(25, 37, 29);
-                grid.ColumnHeadersDefaultCellStyle.ForeColor = AccentColor;
-                grid.DefaultCellStyle.BackColor = PanelColor;
-                grid.DefaultCellStyle.ForeColor = TextColor;
-                grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(30, 74, 46);
-                grid.DefaultCellStyle.SelectionForeColor = Color.White;
-                grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(16, 23, 19);
-            }
-            else if (child is Button button)
+            grid.EnableHeadersVisualStyles = false;
+            grid.BackgroundColor = PanelColor;
+            grid.GridColor = BorderColor;
+            grid.ColumnHeadersDefaultCellStyle.BackColor = SurfaceColor;
+            grid.ColumnHeadersDefaultCellStyle.ForeColor = AccentColor;
+            grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = SurfaceColor;
+            grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = AccentColor;
+            grid.DefaultCellStyle.BackColor = PanelColor;
+            grid.DefaultCellStyle.ForeColor = TextColor;
+            grid.DefaultCellStyle.SelectionBackColor = AccentDimColor;
+            grid.DefaultCellStyle.SelectionForeColor = Color.White;
+            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(10, 16, 12);
+            grid.AlternatingRowsDefaultCellStyle.ForeColor = TextColor;
+            grid.RowHeadersDefaultCellStyle.BackColor = PanelColor;
+            grid.RowHeadersDefaultCellStyle.ForeColor = MutedColor;
+        }
+        else if (control is TextBox textBox)
+        {
+            textBox.BackColor = SurfaceColor;
+            textBox.ForeColor = TextColor;
+            textBox.BorderStyle = BorderStyle.FixedSingle;
+        }
+        else if (control is ComboBox comboBox)
+        {
+            comboBox.BackColor = SurfaceColor;
+            comboBox.ForeColor = TextColor;
+            comboBox.FlatStyle = FlatStyle.Flat;
+        }
+        else if (control is Button button)
+        {
+            button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 1;
+            button.FlatAppearance.BorderColor = BorderColor;
+            button.BackColor = SurfaceColor;
+            button.ForeColor = AccentColor;
+            button.Font = new Font("Segoe UI Semibold", 9, FontStyle.Bold);
+            button.Cursor = Cursors.Hand;
+            button.Margin = new Padding(5, 0, 5, 0);
+            if (button == _refresh)
             {
                 button.BackColor = AccentColor;
-                button.FlatStyle = FlatStyle.Flat;
+                button.ForeColor = Color.FromArgb(5, 15, 9);
                 button.FlatAppearance.BorderColor = AccentColor;
-                button.ForeColor = Color.FromArgb(7, 18, 10);
-                button.Font = new Font("Segoe UI Semibold", 9, FontStyle.Bold);
-                button.Cursor = Cursors.Hand;
             }
-            else if (child is Panel or TableLayoutPanel or FlowLayoutPanel)
+            else if (button == _patchCatalog)
             {
-                child.BackColor = PanelColor;
+                button.BackColor = AccentDimColor;
+                button.ForeColor = AccentColor;
+                button.FlatAppearance.BorderColor = Color.FromArgb(39, 112, 66);
             }
-            ApplyTheme(child);
         }
+        else if (control is Panel panel)
+        {
+            if (panel.BackColor != BackgroundColor && panel.BackColor != PanelColor)
+                panel.BackColor = PanelColor;
+        }
+        else if (control is TableLayoutPanel or FlowLayoutPanel)
+        {
+            if (control.BackColor != BackgroundColor)
+                control.BackColor = PanelColor;
+        }
+
+        foreach (Control child in control.Controls)
+            ApplyTheme(child);
     }
+}
 }
