@@ -12,9 +12,9 @@ python directory/service.py
 
 The default bind is `127.0.0.1:8090`; configure `DIRECTORY_HOST`, `DIRECTORY_PORT`, and `DIRECTORY_DB` for local deployment. Put it behind an HTTPS reverse proxy before exposing it to the internet. The public read endpoint is `GET /api/community/servers`. Owners can submit a one-time record to `POST /api/v1/servers/register`, then send HMAC-SHA256 authenticated, timestamped, nonce-protected heartbeats to `/api/v1/servers/{id}/heartbeat`. Generate a UUID v4 and at least 40 random URL-safe credential characters on the host; store the credential locally and never share it between servers.
 
-The prototype stores credentials as SHA-256 hashes, validates public IPv4 endpoints and metadata, rate limits requests, and omits credentials and admin fields from public responses. Records distinguish `nekonexus`, `paradise`, or `other` software and `game` or `comm` endpoint usage. Paradise-shaped records are accepted and returned, but Paradise does not currently report itself to this directory. A heartbeat only sets last-seen metadata. A trusted protocol-aware probe must explicitly mark the server online; the server list excludes unverified, private, disabled, offline and stale entries.
+The directory stores credentials as SHA-256 hashes, validates public IPv4 endpoints and metadata, rate limits requests, and omits credentials and admin fields from public responses. Records distinguish `nekonexus`, `paradise`, or `other` software and `game` or `comm` endpoint usage. Paradise PR #2 reports connected Paradise nodes to this directory. A heartbeat only refreshes last-seen metadata; a trusted protocol-aware probe must explicitly mark a server online. The public list excludes unverified, private, disabled, offline and stale entries.
 
-This API is not yet wired to Paradise/NekoNexus startup, and no real realtime probe worker exists yet. Paradise server presence currently requires a Paradise-side registration/heartbeat integration; its existing realtime WebSocket only reports to its own web service. So the in-game browser does not yet use this service. Do not operate this prototype as a production directory until TLS, credential rotation/revocation, administrative controls, probe implementation, and the legacy `AuthenticateApplication` integration are completed.
+Paradise PR #2 wires Paradise registration/heartbeats into startup and adapts verified public directory records into the legacy `AuthenticateApplication` response, which feeds UberStrike's existing in-game browser. The repository still does not include a trusted realtime probe worker or directory moderation/credential-rotation interface. Do not mark servers online without a compatible probe, and do not treat this prototype as production-ready until probe operations, TLS/reverse-proxy routing, credential revocation, and administrative controls are deployed.
 
 Run its current unit coverage with `python -m unittest discover -s directory -v`.
 
@@ -48,10 +48,10 @@ The repository investigation and compatibility report are in [docs/architecture-
 
 ## Planned integration
 
-1. Add a community directory API with authenticated server registration, heartbeats, health state, and a filtered public list.
-2. Integrate NekoNexus server startup with the directory while keeping the game server running during directory outages.
-3. Keep `AuthenticateApplication` as the in-game browser path and serialize verified directory entries with the existing UberStrike protocol library (implemented in Paradise PR #2; equivalent NekoNexus support remains follow-up work).
-4. Add moderation and owner onboarding, then verify the list and realtime connection with a live compatible client.
+1. Keep the community directory API's authenticated registration, heartbeat, and verified public-list contract.
+2. Paradise PR #2 integrates Paradise server reporting and the legacy `AuthenticateApplication` adapter; NekoNexus-side reporting/adapter parity remains follow-up work.
+3. Implement and deploy the trusted protocol-aware realtime probe and moderation/credential lifecycle.
+4. Verify the shared hostname's reverse-proxy routes, in-game list rendering, and real joins with a compatible client.
 
 The directory must not advertise an entry as online until a protocol-aware probe has validated its realtime listener. A heartbeat by itself is not gameplay verification. The current upstream server code does not yet expose a directory probe handler, so public discovery remains an integration task rather than a claim of completed end-to-end behavior.
 
