@@ -12,6 +12,8 @@ A Windows desktop companion for the community-owned UberStrike directory. The ap
 - Filter game servers and community nodes.
 - View public server metadata and copy an endpoint.
 - Uses the shared directory API rather than a separate local server catalogue.
+- Reads the central patch catalogue from the configured Paradise URL and displays enabled provider entries or legacy UniversalUnityPatcher patch definitions in a read-only view.
+- Restricts the catalogue request to HTTPS, prohibits XML DTDs/external entity resolution, and caps catalogue size at 1 MB.
 
 ## Patch catalogue integration requirement
 
@@ -29,7 +31,7 @@ The goal is for UniversalUnityPatcher and compatible Paradise/community patcher 
 4. Validate XML and compatibility metadata before applying patches, use HTTPS, retain the last known-good catalogue if an update fails, and do not silently execute untrusted patch payloads.
 5. Keep server discovery separate from patch trust: an opted-in public server listing must not automatically make its provider or patch trusted.
 
-This browser PR currently covers public server discovery, not the UniversalUnityPatcher implementation or deployment of the catalogue endpoint. The central catalogue must not be described as live until the directory service actually serves and validates it.
+The browser now includes a read-only catalogue client targeting the URL above. It supports a proposed `<PatchCatalog><Provider Name="..." ManifestUrl="..." Description="..." Enabled="true" /></PatchCatalog>` directory response and can display legacy `<PatchDefinition><Patch ... /></PatchDefinition>` XML. It does not install or apply patches, download provider manifests, or change UniversalUnityPatcher itself. The endpoint remains unverified and must be deployed by the directory service before this button can load live entries.
 
 ## Build
 
@@ -44,7 +46,7 @@ dotnet run --project .\\network-browser\\ParadiseNetworkBrowser.csproj
 
 - The app only displays records returned by the public API. The directory currently filters out private, disabled, offline, stale, and unverified records. A server heartbeat alone is not proof that its realtime game endpoint is reachable.
 - Copying an endpoint does not automatically join the game; a supported client connection command or game integration must be implemented and tested separately.
-- Provider discovery is not implemented by the current directory API. The proposed `/api/community/providers` endpoint and provider manifests must be added to the service before this app can display provider catalogues or download provider patch definitions.
-- The app does not download, execute, or apply arbitrary patches. Patch provider trust, manifest signing, compatibility checks, and a safe installation workflow should be implemented before adding patch installation.
+- The central patch XML endpoint is not verified as live. Until the service publishes it, the catalogue button will show a clear request failure rather than inventing provider data.
+- The app does not download provider manifests, execute, or apply arbitrary patches. Patch provider trust, manifest signing, compatibility checks, and a safe installation workflow must be implemented before adding patch installation.
 
 The default directory URL can be changed in the text field for development or alternate compatible deployments.
