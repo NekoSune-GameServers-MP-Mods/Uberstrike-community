@@ -335,7 +335,7 @@ public sealed class MainForm : Form
 
     private static string EmptyAsUnknown(string value) => string.IsNullOrWhiteSpace(value) ? "Unknown" : value;
 
-    private static void ApplyTheme(Control control)
+    private void ApplyTheme(Control control)
     {
         if (control is Form)
             control.BackColor = BackgroundColor;
